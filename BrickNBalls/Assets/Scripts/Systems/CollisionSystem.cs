@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -20,21 +21,47 @@ public partial struct CollisionSystem : ISystem
     public void OnUpdate(ref SystemState state)
     {
         CollisionWorld collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
-        NativeReference<bool> isBrickHit = new NativeReference<bool>(Allocator.TempJob);
+        ComponentLookup<BrickTag> brickLookup = SystemAPI.GetComponentLookup<BrickTag>(true);
+        ComponentLookup<DeadZoneTag> deadZoneLookup = SystemAPI.GetComponentLookup<DeadZoneTag>(true);
+        var hitBrick = new NativeReference<Entity>(Allocator.TempJob);
+        var deadZoneHits = new NativeList<Entity>(Allocator.TempJob);
 
         var jobHandle = new CollisionJob()
         {
             CollisionWorld = collisionWorld,
-            IsBrickHit = isBrickHit
+            BrickLookup = brickLookup,
+            DeadZoneLookup = deadZoneLookup,
+            HitBrick = hitBrick,
+            DeadZoneHits = deadZoneHits
         }.Schedule(state.Dependency);
 
         state.Dependency = jobHandle;
         state.Dependency.Complete();
 
-        if (isBrickHit.Value)
+        if (!deadZoneHits.IsEmpty)
+        {
+            foreach (Entity hit in deadZoneHits)
+            {
+                state.EntityManager.DestroyEntity(hit);
+            }
+            deadZoneHits.Clear();
+        }
+
+        if (hitBrick.Value != Entity.Null)
         {
             var score = SystemAPI.GetSingletonRW<ScoreData>();
             score.ValueRW.Value += 1;
+
+            if (SystemAPI.HasComponent<BrickHP>(hitBrick.Value))
+            {
+                var brickHp = SystemAPI.GetComponentRW<BrickHP>(hitBrick.Value);
+                brickHp.ValueRW.Value -= 1;
+
+                if (brickHp.ValueRW.Value <= 0)
+                {
+                    state.EntityManager.DestroyEntity(hitBrick.Value);
+                }
+            }
         }
     }
 
@@ -46,10 +73,13 @@ public partial struct CollisionSystem : ISystem
 public partial struct CollisionJob : IJobEntity
 {
     [ReadOnly] public CollisionWorld CollisionWorld;
-    public NativeReference<bool> IsBrickHit;
+    [ReadOnly] public ComponentLookup<BrickTag> BrickLookup;
+    [ReadOnly] public ComponentLookup<DeadZoneTag> DeadZoneLookup;
+    public NativeReference<Entity> HitBrick;
+    public NativeList<Entity> DeadZoneHits;
 
     [BurstCompile]
-    private unsafe void Execute(ref PhysicsVelocity ballVelocity, in PhysicsCollider ballCollider, in LocalTransform localTransform)
+    private unsafe void Execute(ref PhysicsVelocity ballVelocity, in PhysicsCollider ballCollider, in LocalTransform localTransform, in Entity ball)
     {
         NativeList<DistanceHit> hits = new NativeList<DistanceHit>(Allocator.TempJob);
 
@@ -59,10 +89,30 @@ public partial struct CollisionJob : IJobEntity
             ref hits, 
             ballCollider.Value.Value.GetCollisionFilter());
 
-        if (!isHit) return;
+        if (!isHit)
+        {
+            hits.Dispose();
+            return;
+        }
 
-        ballVelocity.Linear = math.reflect(ballVelocity.Linear, hits[0].SurfaceNormal);
-        IsBrickHit.Value = true;
+        foreach (var hit in hits)
+        {
+            if (hit.Entity == Entity.Null) continue;
+
+            if (DeadZoneLookup.HasComponent(hit.Entity))
+            {
+                DeadZoneHits.Add(ball);
+                break;
+            }
+
+            ballVelocity.Linear = math.reflect(ballVelocity.Linear, hit.SurfaceNormal);
+
+            if (BrickLookup.HasComponent(hit.Entity))
+            {
+                HitBrick.Value = hit.Entity;
+                break;
+            }
+        }
 
         hits.Dispose();
     }

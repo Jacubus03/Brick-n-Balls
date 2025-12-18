@@ -4,12 +4,12 @@ using UnityEngine;
 
 public struct BrickHP : IComponentData 
 {
-    public int HP;
+    public int Value;
 }
 
 public class BrickHPAuthoring : MonoBehaviour
 {
-    [SerializeField] private int _hp;
+    [SerializeField] private int _value;
 
     class Baker : Baker<BrickHPAuthoring>
     {
@@ -19,7 +19,7 @@ public class BrickHPAuthoring : MonoBehaviour
 
             AddComponent(entity, new BrickHP
             {
-                HP = authoring._hp
+                Value = authoring._value
             });
         }
     }

@@ -12,7 +12,7 @@ public class DeadZoneAuthoring : MonoBehaviour
         {
             Entity entity = GetEntity(TransformUsageFlags.None);
 
-            AddComponent(entity, new WallTag());
+            AddComponent(entity, new DeadZoneTag());
         }
     }
 }
