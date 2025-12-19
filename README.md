@@ -2,8 +2,8 @@
 Simple Game using Unity ECS
 
 ## Description:
-Players shoot balls to break bricks with limited ammo, earn points, and try to clear as many bricks as possible.<br>
-UI is separated into a dedicated scene using TextMeshPro, while all gameplay entities are handled via ECS.<br>
+Players shoot balls to break bricks, which have 1 to 3 HP, with limited ammo, earn points, and try to clear as many bricks as possible.<br>
+UI is separated into a dedicated scene, while all gameplay entities are handled via ECS.<br>
 Supports New Input System, URP, and IL2CPP with maximum optimization.
 
 ## Gameplay:
