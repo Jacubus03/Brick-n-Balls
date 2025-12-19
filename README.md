@@ -7,10 +7,10 @@ UI is separated into a dedicated scene using TextMeshPro, while all gameplay ent
 Supports New Input System, URP, and IL2CPP with maximum optimization.
 
 ## Gameplay:
-![](images/gameplay.gif)
-![](images/screen1.png)
-![](images/screen2.png)
-![](images/screen3.png)
+<img src="images/gameplay.gif" width="800"/>
+<img src="images/screen1.png" width="800"/>
+<img src="images/screen2.png" width="800"/>
+<img src="images/screen3.png" width="800"/>
 
 ## What I’m Learning:
 1. Implementing physics-based gameplay using Unity ECS and Unity Physics
