@@ -1,21 +1,30 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class ButtonEvents : MonoBehaviour
 {
-    [SerializeField] private GameObject MenuUI;
-    [SerializeField] private GameObject GameOverUI;
+    [SerializeField] private GameObject _menuUI;
+    [SerializeField] private GameObject _gameOverUI;
+    [SerializeField] private GameStateManager _gameStateManager;
 
     public void OnStartClick()
     {
         SceneManager.LoadScene("GameScene", LoadSceneMode.Additive);
-        MenuUI.SetActive(false);
+        _menuUI.SetActive(false);
     }
 
     public void OnBackToMenuClick()
     {
-        SceneManager.UnloadSceneAsync("GameScene");
-        GameOverUI.SetActive(false);
-        MenuUI.SetActive(true);
+        StartCoroutine(UnloadGameScene());
+    }
+
+    private IEnumerator UnloadGameScene()
+    {
+        AsyncOperation op = SceneManager.UnloadSceneAsync("GameScene");
+        yield return op;
+        _gameOverUI.SetActive(false);
+        _menuUI.SetActive(true);
+        _gameStateManager.Reset();
     }
 }

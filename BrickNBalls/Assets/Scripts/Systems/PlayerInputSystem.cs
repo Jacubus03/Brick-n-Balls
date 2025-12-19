@@ -12,6 +12,7 @@ public partial class PlayerInputSystem : SystemBase
 
     protected override void OnCreate()
     {
+        RequireForUpdate<BallData>();
         _inputSystem = new InputSystem();
         _inputSystem.Enable();
 
