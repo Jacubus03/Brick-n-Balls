@@ -2,9 +2,20 @@
 Simple Game using Unity ECS
 
 ## Description:
-Players shoot balls to break bricks, which have 1 to 3 HP, with limited ammo, earn points, and try to clear as many bricks as possible.<br>
-UI is separated into a dedicated scene, while all gameplay entities are handled via ECS.<br>
-Supports New Input System, URP, and IL2CPP with maximum optimization.
+The player shoots a limited number of balls that bounce off the environment, destroy bricks, and disappear after leaving the bottom of the play area.
+Bricks have between 1 and 3 hit points, and each successful hit awards one point. The goal is to manage the limited number of shots and achieve the highest possible score before all balls are lost.
+
+## Architecture (Unity DOTS / ECS)
+
+The project uses **Unity DOTS (Data-Oriented Technology Stack)** to implement gameplay logic and physics in a performant and scalable way.
+
+- Core gameplay logic and all physics simulation are built with **Unity ECS and Unity Physics**, without relying on MonoBehaviour-based physics.
+- Gameplay entities such as balls, bricks, walls, and dead zones are represented as ECS entities with data-only components.
+- Systems and Burst-compiled jobs are used to process movement, collisions, scoring, and entity lifetime in a data-oriented manner.
+- The **presentation layer** (meshes, visuals, animations, UI) is handled separately using classic GameObjects.
+- UI is placed in a dedicated scene, while ECS-driven gameplay runs independently in gameplay scenes.
+
+This architecture provides a clear separation between data, logic, and presentation, while ensuring high performance and full compatibility with **URP, the New Input System, and IL2CPP with maximum optimization**.
 
 ## Gameplay:
 <img src="images/gameplay.gif" width="800"/>
